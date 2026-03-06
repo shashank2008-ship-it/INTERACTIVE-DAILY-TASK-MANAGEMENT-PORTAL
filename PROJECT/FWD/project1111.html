@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Interactive Daily Task Management System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #0000ffd9;
+      padding: 20px;
+    }
+    .app {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+      padding: 20px 24px 28px;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-bottom: 16px;
+    }
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .date-picker {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+    .date-picker input {
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+    }
+    .filters {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .filters select {
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      font-size: 0.85rem;
+    }
+    .task-form {
+      display: grid;
+      grid-template-columns: 1.5fr 0.9fr 0.9fr auto;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .task-form input[type="text"] {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
+    }
+    .task-form select {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 0.85rem;
+    }
+    .task-form button {
+      padding: 9px 14px;
+      border-radius: 8px;
+      border: none;
+      background: #0000ffd9;
+      color: #ffffff;
+      font-size: 0.9rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .task-form button:hover {
+      background:#0000ffd9;
+    }
+    .summary {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-bottom: 10px;
+    }
+    .task-list {
+      border-top: 1px solid #e5e7eb;
+      margin-top: 8px;
+      padding-top: 8px;
+      max-height: 450px;
+      overflow-y: auto;
+    }
+    .task-item {
+      display: grid;
+      grid-template-columns: auto 1.6fr 0.8fr 0.8fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 6px;
+      border-radius: 8px;
+      transition: background 0.15s;
+      font-size: 0.88rem;
+    }
+    .task-item:nth-child(odd) {
+      background: #f9fafb;
+    }
+    .task-item.completed {
+      opacity: 0.7;
+    }
+    .task-item:hover {
+      background: #eef2ff;
+    }
+    .task-title {
+      word-break: break-word;
+    }
+    .task-title.completed {
+      text-decoration: line-through;
+      color: #6b7280;
+    }
+    .priority {
+      font-size: 0.75rem;
+      padding: 3px 6px;
+      border-radius: 999px;
+      text-align: center;
+      color: #ffffff;
+      width: fit-content;
+      justify-self: start;
+    }
+    .priority-high { background: #dc2626; }
+    .priority-medium { background: #f97316; }
+    .priority-low { background: #16a34a; }
+    .due-time {
+      font-size: 0.78rem;
+      color: #4b5563;
+    }
+    .tag {
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #e0f2fe;
+      color: #0369a1;
+      justify-self: start;
+    }
+    .actions {
+      display: flex;
+      gap: 4px;
+      justify-content: flex-end;
+    }
+    .btn {
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+    }
+    .btn-complete { background: #22c55e; color: #ffffff; }
+    .btn-edit { background: #fbbf24; color: #1f2937; }
+    .btn-delete { background: #ef4444; color: #ffffff; }
+    .btn-complete:hover { background: #16a34a; }
+    .btn-edit:hover { background: #f59e0b; }
+    .btn-delete:hover { background: #dc2626; }
+    .empty-state {
+      text-align: center;
+      color: #9ca3af;
+      font-size: 0.9rem;
+      padding: 20px 6px 8px;
+    }
+    .footer {
+      margin-top: 14px;
+      font-size: 0.78rem;
+      color: #9ca3af;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .footer button {
+      border: none;
+      background: transparent;
+      color: #6b7280;
+      cursor: pointer;
+      font-size: 0.78rem;
+      text-decoration: underline;
+    }
+    .footer button:hover {
+      color: #111827;
+    }
+    @media (max-width: 720px) {
+      .task-form {
+        grid-template-columns: 1.5fr 1fr;
+        grid-template-rows: auto auto;
+      }
+      .task-form select:nth-child(2),
+      .task-form select:nth-child(3) {
+        grid-column: span 1;
+      }
+      .task-form button {
+        grid-column: span 2;
+      }
+      .task-item {
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto auto;
+        row-gap: 4px;
+      }
+      .priority,
+      .due-time,
+      .tag {
+        justify-self: start;
+      }
+      .due-time {
+        grid-column: 2 / 3;
+      }
+      .tag {
+        grid-column: 2 / 3;
+      }
+      .actions {
+        grid-column: 2 / 3;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Daily Task Manager</h1>
+    <p class="subtitle">Plan, track and complete your tasks for a specific day.</p>
+
+    <div class="top-bar">
+      <div class="date-picker">
+        <span>Date:</span>
+        <input type="date" id="selectedDate" />
+      </div>
+      <div class="filters">
+        <select id="statusFilter">
+          <option value="all">All statuses</option>
+          <option value="pending">Pending only</option>
+          <option value="completed">Completed only</option>
+        </select>
+        <select id="priorityFilter">
+          <option value="all">All priorities</option>
+          <option value="high">High priority</option>
+          <option value="medium">Medium priority</option>
+          <option value="low">Low priority</option>
+        </select>
+      </div>
+    </div>
+
+    <form id="taskForm" class="task-form">
+      <input
+        type="text"
+        id="taskInput"
+        placeholder="What do you want to get done today?"
+        required
+      />
+      <select id="priorityInput">
+        <option value="medium">Priority: Medium</option>
+        <option value="high">Priority: High</option>
+        <option value="low">Priority: Low</option>
+      </select>
+      <input type="time" id="timeInput" />
+      <button type="submit">Add Task</button>
+    </form>
+
+    <div class="summary" id="summaryText"></div>
+
+    <div id="taskList" class="task-list"></div>
+    <div id="emptyState" class="empty-state" style="display:none;">
+      No tasks for this day. Add something above to get started.
+    </div>
+
+    <div class="footer">
+      <span>Tasks are stored in your browser and kept separate for each date.</span>
+      <button id="clearDay">Clear tasks for this day</button>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "daily_task_manager_v1";
+
+    const selectedDateEl = document.getElementById("selectedDate");
+    const statusFilterEl = document.getElementById("statusFilter");
+    const priorityFilterEl = document.getElementById("priorityFilter");
+    const taskForm = document.getElementById("taskForm");
+    const taskInput = document.getElementById("taskInput");
+    const priorityInput = document.getElementById("priorityInput");
+    const timeInput = document.getElementById("timeInput");
+    const taskListEl = document.getElementById("taskList");
+    const emptyStateEl = document.getElementById("emptyState");
+    const summaryTextEl = document.getElementById("summaryText");
+    const clearDayBtn = document.getElementById("clearDay");
+
+    function loadAllTasks() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return {};
+      try {
+        return JSON.parse(raw) || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function saveAllTasks(all) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+    }
+
+    function getTodayISO() {
+      const d = new Date();
+      const offset = d.getTimezoneOffset();
+      const local = new Date(d.getTime() - offset * 60000);
+      return local.toISOString().split("T")[0];
+    }
+
+    function getTasksForSelectedDate() {
+      const all = loadAllTasks();
+      const dateKey = selectedDateEl.value || getTodayISO();
+      return all[dateKey] || [];
+    }
+
+    function setTasksForSelectedDate(tasks) {
+      const all = loadAllTasks();
+      const dateKey = selectedDateEl.value || getTodayISO();
+      all[dateKey] = tasks;
+      saveAllTasks(all);
+    }
+
+    function renderTasks() {
+      const tasks = getTasksForSelectedDate();
+      const statusFilter = statusFilterEl.value;
+      const priorityFilter = priorityFilterEl.value;
+
+      const filtered = tasks.filter(task => {
+        let statusOk = true;
+        let priorityOk = true;
+
+        if (statusFilter === "pending") statusOk = !task.completed;
+        else if (statusFilter === "completed") statusOk = task.completed;
+
+        if (priorityFilter !== "all") priorityOk = task.priority === priorityFilter;
+
+        return statusOk && priorityOk;
+      });
+
+      taskListEl.innerHTML = "";
+
+      if (tasks.length === 0) {
+        emptyStateEl.style.display = "block";
+        summaryTextEl.textContent = "0 tasks for this day.";
+        return;
+      }
+      emptyStateEl.style.display = filtered.length === 0 ? "block" : "none";
+
+      const total = tasks.length;
+      const completedCount = tasks.filter(t => t.completed).length;
+      const pendingCount = total - completedCount;
+      summaryTextEl.textContent =
+        total + " total • " + pendingCount + " pending • " + completedCount + " completed";
+
+      filtered.forEach(task => {
+        const row = document.createElement("div");
+        row.className = "task-item" + (task.completed ? " completed" : "");
+        row.dataset.id = task.id;
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = task.completed;
+        checkbox.addEventListener("change", () => toggleComplete(task.id));
+
+        const title = document.createElement("div");
+        title.className = "task-title" + (task.completed ? " completed" : "");
+        title.textContent = task.title;
+
+        const pri = document.createElement("span");
+        pri.className = "priority priority-" + task.priority;
+        pri.textContent =
+          task.priority === "high"
+            ? "High"
+            : task.priority === "medium"
+            ? "Medium"
+            : "Low";
+
+        const time = document.createElement("span");
+        time.className = "due-time";
+        time.textContent = task.time ? "Due: " + task.time : "No time";
+
+        const actions = document.createElement("div");
+        actions.className = "actions";
+
+        const completeBtn = document.createElement("button");
+        completeBtn.className = "btn btn-complete";
+        completeBtn.textContent = task.completed ? "Uncomplete" : "Done";
+        completeBtn.addEventListener("click", () => toggleComplete(task.id));
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "btn btn-edit";
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => editTask(task.id));
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "btn btn-delete";
+        deleteBtn.textContent = "Delete";
+        deleteBtn.addEventListener("click", () => deleteTask(task.id));
+
+        actions.appendChild(completeBtn);
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+
+        row.appendChild(checkbox);
+        row.appendChild(title);
+        row.appendChild(pri);
+        row.appendChild(time);
+        row.appendChild(actions);
+
+        taskListEl.appendChild(row);
+      });
+    }
+
+    function addTask(title, priority, time) {
+      const tasks = getTasksForSelectedDate();
+      const newTask = {
+        id: Date.now(),
+        title: title.trim(),
+        priority: priority || "medium",
+        time: time || "",
+        completed: false
+      };
+      tasks.push(newTask);
+      setTasksForSelectedDate(tasks);
+      renderTasks();
+    }
+
+    function toggleComplete(id) {
+      const tasks = getTasksForSelectedDate();
+      const idx = tasks.findIndex(t => t.id === id);
+      if (idx === -1) return;
+      tasks[idx].completed = !tasks[idx].completed;
+      setTasksForSelectedDate(tasks);
+      renderTasks();
+    }
+
+    function editTask(id) {
+      const tasks = getTasksForSelectedDate();
+      const idx = tasks.findIndex(t => t.id === id);
+      if (idx === -1) return;
+      const current = tasks[idx];
+      const newTitle = prompt("Edit task title:", current.title);
+      if (!newTitle || !newTitle.trim()) return;
+      tasks[idx].title = newTitle.trim();
+      const newTime = prompt(
+        "Edit time (HH:MM) or leave empty:",
+        current.time || ""
+      );
+      if (newTime !== null) tasks[idx].time = newTime.trim();
+      setTasksForSelectedDate(tasks);
+      renderTasks();
+    }
+
+    function deleteTask(id) {
+      if (!confirm("Delete this task?")) return;
+      let tasks = getTasksForSelectedDate();
+      tasks = tasks.filter(t => t.id !== id);
+      setTasksForSelectedDate(tasks);
+      renderTasks();
+    }
+
+    function clearTasksForDay() {
+      if (!confirm("Clear all tasks for this day?")) return;
+      const all = loadAllTasks();
+      const dateKey = selectedDateEl.value || getTodayISO();
+      delete all[dateKey];
+      saveAllTasks(all);
+      renderTasks();
+    }
+
+    taskForm.addEventListener("submit", e => {
+      e.preventDefault();
+      const title = taskInput.value;
+      if (!title.trim()) return;
+      addTask(title, priorityInput.value, timeInput.value);
+      taskInput.value = "";
+      timeInput.value = "";
+      taskInput.focus();
+    });
+
+    statusFilterEl.addEventListener("change", renderTasks);
+    priorityFilterEl.addEventListener("change", renderTasks);
+    selectedDateEl.addEventListener("change", renderTasks);
+    clearDayBtn.addEventListener("click", clearTasksForDay);
+
+    selectedDateEl.value = getTodayISO();
+    renderTasks();
+  </script>
+</body>
+</html>
